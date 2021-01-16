@@ -11,7 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Controller class about category
@@ -29,7 +28,7 @@ public class CategoryController {
         this.categoryRepository = categoryRepository;
     }
 
-    @GetMapping("/categories")
+    @GetMapping("/all")
     public List<Category> getAllCategories() {
         return categoryRepository.findAll(Sort.by(Sort.Order.asc("title")));
     }
@@ -62,14 +61,14 @@ public class CategoryController {
 
     @GetMapping("/id/{id}")
     public ResponseEntity<Category> findCategoryById(@PathVariable Long id) {
-        Optional<Category> categoryOptional = categoryRepository.findById(id);
-        if (categoryOptional.isPresent()) {
-            return ResponseEntity.ok(categoryOptional.get());
-        } else  {
-            String msgError = String.format("Category with this id=%s not found", id);
-            logger.error(msgError);
-            return new ResponseEntity(msgError, HttpStatus.NOT_ACCEPTABLE);
-        }
+        return categoryRepository
+                .findById(id)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> {
+                    String msgError = String.format("Category with this id=%s not found", id);
+                    logger.error(msgError);
+                    return new ResponseEntity(msgError, HttpStatus.NOT_ACCEPTABLE);
+                });
     }
 
     @DeleteMapping("/delete/{id}")

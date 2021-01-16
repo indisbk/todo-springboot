@@ -11,7 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Controller class about priority
@@ -29,7 +28,7 @@ public class PriorityController {
         this.priorityRepository = priorityRepository;
     }
 
-    @GetMapping("/priorities")
+    @GetMapping("/all")
     public List<Priority> getAllPriorities() {
         return priorityRepository.findAll(Sort.by(Sort.Order.asc("title")));
     }
@@ -70,14 +69,14 @@ public class PriorityController {
 
     @GetMapping("/id/{id}")
     public ResponseEntity<Priority> findPriorityById(@PathVariable Long id) {
-        Optional<Priority> optionalPriority = priorityRepository.findById(id);
-        if (optionalPriority.isPresent()) {
-            return ResponseEntity.ok(optionalPriority.get());
-        } else  {
-            String msgError = String.format("Priority with this id=%s not found", id);
-            logger.error(msgError);
-            return new ResponseEntity(msgError, HttpStatus.NOT_ACCEPTABLE);
-        }
+        return priorityRepository
+                .findById(id)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> {
+                    String msgError = String.format("Priority with this id=%s not found", id);
+                    logger.error(msgError);
+                    return new ResponseEntity(msgError, HttpStatus.NOT_ACCEPTABLE);
+                });
     }
 
     @DeleteMapping("/delete/{id}")
