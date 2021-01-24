@@ -2,6 +2,7 @@ package com.learnindi.todo.todospringboot.controller;
 
 import com.learnindi.todo.todospringboot.entity.Category;
 import com.learnindi.todo.todospringboot.repo.CategoryRepository;
+import com.learnindi.todo.todospringboot.search.SearchContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -81,5 +82,10 @@ public class CategoryController {
             logger.error(msgError, ex);
             return new ResponseEntity<String>(msgError, HttpStatus.NOT_ACCEPTABLE);
         }
+    }
+
+    @PostMapping("/search")
+    public ResponseEntity<List<Category>> searchCategory(@RequestBody SearchContainer<Category> container) {
+        return ResponseEntity.ok(categoryRepository.findByTitle(container.getSearchText()));
     }
 }

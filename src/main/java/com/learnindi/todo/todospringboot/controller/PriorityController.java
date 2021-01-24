@@ -1,7 +1,9 @@
 package com.learnindi.todo.todospringboot.controller;
 
+import com.learnindi.todo.todospringboot.entity.Category;
 import com.learnindi.todo.todospringboot.entity.Priority;
 import com.learnindi.todo.todospringboot.repo.PriorityRepository;
+import com.learnindi.todo.todospringboot.search.SearchContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -89,5 +91,10 @@ public class PriorityController {
             logger.error(msgError, ex);
             return new ResponseEntity<String>(msgError, HttpStatus.NOT_ACCEPTABLE);
         }
+    }
+
+    @PostMapping("/search")
+    public ResponseEntity<List<Priority>> searchPriority(@RequestBody SearchContainer<Priority> container) {
+        return ResponseEntity.ok(priorityRepository.findByTitle(container.getSearchText()));
     }
 }
