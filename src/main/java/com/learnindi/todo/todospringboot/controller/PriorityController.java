@@ -1,6 +1,5 @@
 package com.learnindi.todo.todospringboot.controller;
 
-import com.learnindi.todo.todospringboot.entity.Category;
 import com.learnindi.todo.todospringboot.entity.Priority;
 import com.learnindi.todo.todospringboot.repo.PriorityRepository;
 import com.learnindi.todo.todospringboot.search.SearchContainer;
@@ -22,9 +21,9 @@ import java.util.List;
 @RequestMapping("/priority")
 public class PriorityController {
 
-    private Logger logger = LoggerFactory.getLogger(PriorityController.class);
+    private final Logger logger = LoggerFactory.getLogger(PriorityController.class);
 
-    private PriorityRepository priorityRepository;
+    private final PriorityRepository priorityRepository;
 
     public PriorityController(PriorityRepository priorityRepository) {
         this.priorityRepository = priorityRepository;
@@ -53,20 +52,22 @@ public class PriorityController {
     }
 
     @PutMapping("/update")
-    public ResponseEntity<Priority> updatePriority(@RequestBody Priority priority) {
+    public ResponseEntity<String> updatePriority(@RequestBody Priority priority) {
         if (priority.getId() == null || priority.getId() == 0) {
-            return new ResponseEntity("Missed parameter: id can't be null or zero!", HttpStatus.NOT_ACCEPTABLE);
+            return new ResponseEntity<>("Missed parameter: id can't be null or zero!", HttpStatus.NOT_ACCEPTABLE);
         }
 
         if (priority.getTitle() == null || priority.getTitle().trim().length() == 0) {
-            return new ResponseEntity("Missed parameter: title", HttpStatus.NOT_ACCEPTABLE);
+            return new ResponseEntity<>("Missed parameter: title", HttpStatus.NOT_ACCEPTABLE);
         }
 
         if (priority.getColor() == null || priority.getColor().trim().length() == 0) {
-            return new ResponseEntity("Missed parameter: color", HttpStatus.NOT_ACCEPTABLE);
+            return new ResponseEntity<>("Missed parameter: color", HttpStatus.NOT_ACCEPTABLE);
         }
 
-        return ResponseEntity.ok(priorityRepository.save(priority));
+        priorityRepository.save(priority);
+
+        return new ResponseEntity<String>(HttpStatus.OK);
     }
 
     @GetMapping("/id/{id}")

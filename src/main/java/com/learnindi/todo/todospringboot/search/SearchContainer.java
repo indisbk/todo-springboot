@@ -13,5 +13,9 @@ import lombok.*;
 @Setter
 @EqualsAndHashCode
 public class SearchContainer<T> {
+
     private String searchText;
+    private boolean taskStatus;
+    private Long categoryId;
+    private Long priorityId;
 }
