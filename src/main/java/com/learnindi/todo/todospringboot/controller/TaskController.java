@@ -6,6 +6,8 @@ import com.learnindi.todo.todospringboot.search.SearchContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -87,12 +89,18 @@ public class TaskController {
     }
 
     @PostMapping("/search")
-    public ResponseEntity<List<Task>> searchTask(@RequestBody SearchContainer<Task> container) {
+    public ResponseEntity<Page<Task>> searchTask(@RequestBody SearchContainer<Task> container) {
+        //todo: pretend NPE by Optional maybe
+        var sort = Sort.by(Sort.Direction.fromString(container.getSortDirection()), container.getSortColumnName());
+
+        var pageRequest = PageRequest.of(container.getPageNumber(), container.getPageSize(), sort);
+
         return ResponseEntity.ok(taskRepository.findByParameters(
                 container.getSearchText(),
                 container.isTaskStatus(),
                 container.getCategoryId(),
-                container.getPriorityId()
+                container.getPriorityId(),
+                pageRequest
         ));
     }
 }
