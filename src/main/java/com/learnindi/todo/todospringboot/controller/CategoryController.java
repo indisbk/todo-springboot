@@ -1,12 +1,11 @@
 package com.learnindi.todo.todospringboot.controller;
 
 import com.learnindi.todo.todospringboot.entity.Category;
-import com.learnindi.todo.todospringboot.repo.CategoryRepository;
 import com.learnindi.todo.todospringboot.search.SearchContainer;
+import com.learnindi.todo.todospringboot.service.CategoryService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,15 +22,15 @@ public class CategoryController {
 
     private final Logger logger = LoggerFactory.getLogger(CategoryController.class);
 
-    private final CategoryRepository categoryRepository;
+    private final CategoryService categoryService;
 
-    public CategoryController(CategoryRepository categoryRepository) {
-        this.categoryRepository = categoryRepository;
+    public CategoryController(CategoryService categoryService) {
+        this.categoryService = categoryService;
     }
 
     @GetMapping("/all")
     public List<Category> getAllCategories() {
-        return categoryRepository.findAll(Sort.by(Sort.Order.asc("title")));
+        return categoryService.getAllCategories();
     }
 
     @PostMapping("/add")
@@ -44,7 +43,7 @@ public class CategoryController {
             return new ResponseEntity("Missed parameter: title", HttpStatus.NOT_ACCEPTABLE);
         }
 
-        return ResponseEntity.ok(categoryRepository.save(category));
+        return ResponseEntity.ok(categoryService.addCategory(category));
     }
 
     @PutMapping("/update")
@@ -57,37 +56,36 @@ public class CategoryController {
             return new ResponseEntity<>("Missed parameter: title", HttpStatus.NOT_ACCEPTABLE);
         }
 
-        categoryRepository.save(category);
+        categoryService.updateCategory(category);
 
-        return new ResponseEntity<String>(HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @GetMapping("/id/{id}")
     public ResponseEntity<Category> findCategoryById(@PathVariable Long id) {
-        return categoryRepository
-                .findById(id)
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> {
-                    String msgError = String.format("Category with this id=%s not found", id);
-                    logger.error(msgError);
-                    return new ResponseEntity(msgError, HttpStatus.NOT_ACCEPTABLE);
-                });
+        Category foundCategory = categoryService.findCategoryById(id);
+        if (foundCategory == null) {
+            String msgError = String.format("Category with this id=%s not found", id);
+            logger.error(msgError);
+            return new ResponseEntity(msgError, HttpStatus.NOT_ACCEPTABLE);
+        }
+        return ResponseEntity.ok(foundCategory);
     }
 
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<String> deleteCategoryById(@PathVariable Long id) {
         try {
-            categoryRepository.deleteById(id);
-            return new ResponseEntity<String>(HttpStatus.OK);
+            categoryService.deleteCategoryById(id);
+            return new ResponseEntity<>(HttpStatus.OK);
         } catch (EmptyResultDataAccessException ex) {
             String msgError = String.format("Category with this id=%s not found", id);
             logger.error(msgError, ex);
-            return new ResponseEntity<String>(msgError, HttpStatus.NOT_ACCEPTABLE);
+            return new ResponseEntity<>(msgError, HttpStatus.NOT_ACCEPTABLE);
         }
     }
 
     @PostMapping("/search")
     public ResponseEntity<List<Category>> searchCategory(@RequestBody SearchContainer<Category> container) {
-        return ResponseEntity.ok(categoryRepository.findByTitle(container.getSearchText()));
+        return ResponseEntity.ok(categoryService.searchCategories(container));
     }
 }
